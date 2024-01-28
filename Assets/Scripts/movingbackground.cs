@@ -4,7 +4,14 @@ using UnityEngine;
 
 public class MovingBackground : MonoBehaviour
 {
-    public float speed = 1.0f;  // Prêdkoœæ ruchu t³a
+    public float speed = 1.0f;
+    public GameController gameController; // Upewnij siê, ¿e ten obiekt jest przypisany w inspektorze Unity
+
+    void Start()
+    {
+        float startPositionX = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).x; // Lewy kraniec ekranu
+        transform.position = new Vector2(startPositionX, transform.position.y);
+    }
 
     void Update()
     {
@@ -13,10 +20,9 @@ public class MovingBackground : MonoBehaviour
 
     void MoveBackground()
     {
-        // Przesuñ obiekt w lewo (lub innym kierunku)
-        transform.Translate(Vector2.left * speed * Time.deltaTime);
+        float newPositionX = transform.position.x - speed * Time.deltaTime;
+        transform.position = new Vector2(newPositionX, transform.position.y);
 
-        // Jeœli obiekt jest wystarczaj¹co daleko w lewo, przenieœ go z powrotem na prawo
         if (transform.position.x < -11)
         {
             RepositionBackground();
@@ -25,10 +31,23 @@ public class MovingBackground : MonoBehaviour
 
     void RepositionBackground()
     {
-        // Okreœl now¹ pozycjê obiektu na prawo od ekranu
-        Vector2 newPosition = new Vector2(13, 0);
+        float offset = 11 * 2; // Wartoœæ dwa razy wiêksza ni¿ szerokoœæ obiektu t³a
 
-        // Przesuñ obiekt na now¹ pozycjê
+        Vector2 newPosition = new Vector2(transform.position.x + offset, transform.position.y);
         transform.position = newPosition;
+    }
+
+    void SpawnObjects()
+    {
+        if (gameController != null)
+        {
+            float spawnY = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 1, 0)).y; // Y-coordinate pod górnym krawêdzi¹ ekranu
+            Instantiate(gameController.goodPrefab, new Vector3(Random.Range(-5f, 5f), spawnY, 0f), Quaternion.identity);
+            Instantiate(gameController.badPrefab, new Vector3(Random.Range(-5f, 5f), spawnY, 0f), Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogError("gameController is not assigned in MovingBackground script.");
+        }
     }
 }
